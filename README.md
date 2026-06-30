@@ -126,13 +126,13 @@ graph TD
 ## 🖼️ Assets
 
 ### Workflow Diagram
-![Workflow Diagram](file:///c:/Users/padhu/CODING%20PROJECTS/OneDrive/Documents/Attachments/Desktop/ADK-WORKSPACE/podcast-script-curator/assets/architecture_diagram.png)
+![Workflow Diagram](assets/architecture_diagram.png)
 
 ### Cover Page Banner
-![Cover Page Banner](file:///c:/Users/padhu/CODING%20PROJECTS/OneDrive/Documents/Attachments/Desktop/ADK-WORKSPACE/podcast-script-curator/assets/cover_page_banner.png)
+![Cover Page Banner](assets/cover_page_banner.png)
 
 ---
 
 ## 📜 Demo Script
 The spoken narration script to showcase this agent can be found here:
-[DEMO_SCRIPT.txt](file:///c:/Users/padhu/CODING%20PROJECTS/OneDrive/Documents/Attachments/Desktop/ADK-WORKSPACE/podcast-script-curator/DEMO_SCRIPT.txt)
+[DEMO_SCRIPT.txt](DEMO_SCRIPT.txt)

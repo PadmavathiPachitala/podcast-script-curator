@@ -37,11 +37,11 @@ graph TD
 
 ## 3. Concepts Used & File References
 
-- **ADK Workflow Graph:** Implemented in [agent.py](file:///c:/Users/padhu/CODING%20PROJECTS/OneDrive/Documents/Attachments/Desktop/ADK-WORKSPACE/podcast-script-curator/app/agent.py#L318-L333) using the `Workflow` and `Edge` primitives to coordinate nodes sequentially and conditionally.
-- **LlmAgent:** Configured in [agent.py](file:///c:/Users/padhu/CODING%20PROJECTS/OneDrive/Documents/Attachments/Desktop/ADK-WORKSPACE/podcast-script-curator/app/agent.py#L59-L118) to represent the `orchestrator`, `news_researcher`, and `script_writer`.
-- **AgentTool:** Leveraged in [agent.py](file:///c:/Users/padhu/CODING%20PROJECTS/OneDrive/Documents/Attachments/Desktop/ADK-WORKSPACE/podcast-script-curator/app/agent.py#L117) to expose `news_researcher` and `script_writer` as functional tools for delegation under the orchestrator.
-- **MCP Server:** Implemented in [mcp_server.py](file:///c:/Users/padhu/CODING%20PROJECTS/OneDrive/Documents/Attachments/Desktop/ADK-WORKSPACE/podcast-script-curator/app/mcp_server.py) using the FastMCP framework to provide article search, text parsing, and file output tools.
-- **Security Checkpoint:** Set up as the first node in [agent.py](file:///c:/Users/padhu/CODING%20PROJECTS/OneDrive/Documents/Attachments/Desktop/ADK-WORKSPACE/podcast-script-curator/app/agent.py#L124-L209) to scrub input PII, detect prompt injections, log decisions in JSON format, and enforce content filters.
+- **ADK Workflow Graph:** Implemented in [agent.py](app/agent.py#L318-L333) using the `Workflow` and `Edge` primitives to coordinate nodes sequentially and conditionally.
+- **LlmAgent:** Configured in [agent.py](app/agent.py#L59-L118) to represent the `orchestrator`, `news_researcher`, and `script_writer`.
+- **AgentTool:** Leveraged in [agent.py](app/agent.py#L117) to expose `news_researcher` and `script_writer` as functional tools for delegation under the orchestrator.
+- **MCP Server:** Implemented in [mcp_server.py](app/mcp_server.py) using the FastMCP framework to provide article search, text parsing, and file output tools.
+- **Security Checkpoint:** Set up as the first node in [agent.py](app/agent.py#L124-L209) to scrub input PII, detect prompt injections, log decisions in JSON format, and enforce content filters.
 - **Agents CLI:** Scaffolding, lockfile sync, dependency verification, and playground testing managed via `agents-cli`.
 
 ---
