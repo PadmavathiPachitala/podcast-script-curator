@@ -1,0 +1,45 @@
+[0:00 — HOOK]
+Preparing tech podcast scripts is a massive chore. Hosts spend hours reading articles, cross-referencing news, and trying to draft natural conversations. Today, I'm excited to show you the Podcast Script Curator—an autonomous producer that handles the research and script writing for you, completely securely.
+
+[0:20 — WHAT IT IS]
+This project is an advanced AI agent system built in the Freestyle track of the Google Agent Development Kit competition. It acts as your content assistant, researching complex tech topics, validating them for safety, and generating production-ready scripts.
+
+[0:40 — SHOW THE BANNER]
+(show assets/cover_page_banner.png)
+As you can see on the screen, this is the cover page banner of our project. It represents the central goal of our system: automated, secure, and collaborative podcast script curation.
+
+[1:00 — ARCHITECTURE]
+(show assets/architecture_diagram.png)
+Let's walk through how this works under the hood. 
+(pause)
+First, the workflow starts when a user inputs tech topics. 
+The input goes straight into our Security Checkpoint node. This node scrubs personal info like emails and phone numbers, checks for prompt injection, and logs every audit step in JSON format.
+If it is safe, the workflow routes to the News Research node.
+Here, our Orchestrator agent delegates research tasks to our news_researcher sub-agent.
+The news_researcher sub-agent calls our local Model Context Protocol, or MCP server, to fetch matching article headlines and summaries.
+Next, we hit the Human Review node. The workflow pauses here, asking the user to review the research summaries and give their sign-off.
+Once the user types 'yes', the workflow routes to the Generate Script node.
+The Orchestrator agent delegates dialogue drafting to our script_writer sub-agent.
+The script_writer sub-agent generates a conversational dialogue script between Host A and Host B, and automatically saves it to our local workspace.
+Finally, the workflow ends at the Final Output node, printing the completed script.
+
+[2:00 — LIVE DEMO]
+(switch to playground at localhost:18081)
+Now, let's look at the running project in action in the playground.
+(pause)
+I'll enter a standard tech topic query: "Google Gemini 2.5 and Astral uv package manager."
+I click run.
+(pause)
+As expected, the Security Checkpoint passes and the news_researcher queries our FastMCP tools.
+Look at the screen—the agent is now pausing for my review! It displays summaries of Gemini 2.5 Flash and Astral uv features.
+I will reply 'yes' and submit it.
+(pause)
+The script_writer sub-agent now takes over. It converts these summaries into a script draft featuring Host A asking questions and Host B explaining the technical details. The draft is immediately exported and saved as script_draft.txt.
+(pause)
+We can also verify our security controls by pasting PII, like an email address, or a prompt injection phrase. The security checkpoint node successfully sanitizes the PII, and blocks prompt injections outright, protecting the model and our session history.
+
+[3:00 — SECURITY & MCP]
+To summarize, our security node keeps everything completely safe, from scrubbing phone numbers to maintaining robust JSON audit logs. And our FastMCP tools connect our agents directly to the news feed database and local disk operations.
+
+[3:30 — IMPACT / CLOSE]
+By shifting podcasters from researchers to editors-in-chief, this agent cuts preparation time by 90 percent. Thank you so much for watching the demo!
