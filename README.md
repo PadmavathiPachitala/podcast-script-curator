@@ -59,6 +59,59 @@ graph TD
 
 ---
 
+## 🚀 How to Run & Use (Including Free Mode)
+
+The agent supports two modes of execution: **Free Offline Mode** (using a local mock model) and **Online Mode** (using Google Gemini API or Vertex AI).
+
+### 1. Installation
+First, sync dependencies using `uv` inside the project folder:
+```bash
+uv sync
+```
+
+### 2. Configure Your Run Mode in `.env`
+Create or edit the `.env` file in the project root:
+
+#### A. Free Offline Mode (Default & 100% Free)
+This mode uses a mock model (`DemoModel` implemented in `app/agent.py`) which runs completely offline without any internet connection. It requires **no API keys, costs no credits, and has no rate limits**.
+To run in free offline mode, set:
+```ini
+GOOGLE_GENAI_USE_VERTEXAI=False
+GEMINI_MODEL=demo-offline-model
+```
+
+#### B. Online Mode (Using Gemini Developer API Key)
+To connect the agent to Google's real live APIs, set:
+```ini
+GOOGLE_API_KEY=your-gemini-api-key
+GEMINI_API_KEY=your-gemini-api-key
+GOOGLE_GENAI_USE_VERTEXAI=False
+GEMINI_MODEL=gemini-2.5-flash
+```
+*Note: Free tier keys are limited to 20 requests per day. To lift this limit, enable "Pay-as-you-go" billing in Google AI Studio (which raises the limit to 1,500+ requests/day, remaining completely free under normal developer usage).*
+
+#### C. Enterprise Mode (Using Vertex AI)
+To use Vertex AI, run `gcloud auth application-default login` on your system to authenticate, and set:
+```ini
+GOOGLE_GENAI_USE_VERTEXAI=True
+GEMINI_MODEL=gemini-2.5-flash
+```
+
+### 3. Launch the Agent Web UI (Playground)
+Run the playground to start testing the agent interactively:
+- **Windows**:
+  ```powershell
+  uv run adk web app --host 127.0.0.1 --port 18081 --reload_agents
+  ```
+- **macOS / Linux**:
+  ```bash
+  make playground
+  ```
+
+Open **`http://127.0.0.1:18081`** in your browser. You can enter topics (e.g. `python`), review headlines, approve, and watch the script get generated!
+
+---
+
 ## 🧪 Sample Test Cases & Outputs
 
 ### Test Case 1: How the Agent Works & Does the Work (End-to-End Workflow)

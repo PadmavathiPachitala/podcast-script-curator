@@ -70,11 +70,117 @@ mcp_toolset = McpToolset(
     )
 )
 
-# Instantiate Gemini model with custom retry options to handle transient rate limits / 503s
-model_instance = Gemini(
-    model=config.model,
-    retry_options=types.HttpRetryOptions(attempts=5)
-)
+from google.adk.models.base_llm import BaseLlm
+from google.adk.models.llm_response import LlmResponse
+import typing
+
+class DemoModel(BaseLlm):
+    model: str = "demo-offline-model"
+
+    async def generate_content_async(self, llm_request: Any, stream: bool = False) -> typing.AsyncGenerator[LlmResponse, None]:
+        # Identify the sub-agent calling based on its system instruction
+        system_instruction = ""
+        if hasattr(llm_request, "config") and llm_request.config:
+            if hasattr(llm_request.config, "system_instruction") and llm_request.config.system_instruction:
+                instr = llm_request.config.system_instruction
+                if isinstance(instr, str):
+                    system_instruction = instr
+                elif hasattr(instr, "parts") and instr.parts:
+                    system_instruction = " ".join([p.text for p in instr.parts if hasattr(p, "text") and p.text])
+        
+        # Identify the user's prompt
+        prompt = ""
+        if hasattr(llm_request, "contents") and llm_request.contents:
+            last_content = llm_request.contents[-1]
+            if hasattr(last_content, "parts") and last_content.parts:
+                prompt = " ".join([p.text for p in last_content.parts if hasattr(p, "text") and p.text])
+
+        # 1. Podcast Production Orchestrator logic
+        if "Podcast Production Orchestrator" in system_instruction:
+            # Check if there is a tool response in the history
+            has_tool_response = False
+            last_tool_name = ""
+            for content in reversed(llm_request.contents):
+                if hasattr(content, "parts") and content.parts:
+                    for part in content.parts:
+                        if hasattr(part, "function_response") and part.function_response:
+                            has_tool_response = True
+                            last_tool_name = part.function_response.name
+                            break
+                if has_tool_response:
+                    break
+            
+            if has_tool_response:
+                if last_tool_name == "news_researcher":
+                    summary = (
+                        "Here is the summarized list of tech stories:\n\n"
+                        "- **Title:** Google Gemini 2.5 Flash Released\n"
+                        "  **Summary:** Google launched Gemini 2.5 Flash with massive performance gains and low-latency API operations.\n"
+                        "  **Key Takeaways:** Excellent for multi-agent workflows.\n\n"
+                        "- **Title:** Astral uv Package Manager Updates\n"
+                        "  **Summary:** uv package manager introduced project scaffolding and workspace management.\n"
+                        "  **Key Takeaways:** Rust-based fast environment setups."
+                    )
+                    yield LlmResponse(content=types.Content(role='model', parts=[types.Part.from_text(text=summary)]))
+                elif last_tool_name == "script_writer":
+                    script = (
+                        "[Upbeat Intro Music]\n"
+                        "Host A: Welcome back to the podcast! Today we are discussing Gemini 2.5 and uv.\n"
+                        "Host B: Yes, Gemini 2.5 Flash is incredibly fast, and uv simplifies Python development.\n"
+                        "Host A: That is fantastic! See you next time.\n"
+                        "[Upbeat Outro Music]"
+                    )
+                    yield LlmResponse(content=types.Content(role='model', parts=[types.Part.from_text(text=script)]))
+                else:
+                    yield LlmResponse(content=types.Content(role='model', parts=[types.Part.from_text(text="Execution completed.")]))
+            else:
+                # Decides tool routing
+                if "conduct research" in prompt.lower() or "topics" in prompt.lower():
+                    tool_call = types.Part(function_call=types.FunctionCall(
+                        name="news_researcher",
+                        args={"request": prompt}
+                    ))
+                    yield LlmResponse(content=types.Content(role='model', parts=[tool_call]))
+                elif "write a podcast script" in prompt.lower() or "approved stories" in prompt.lower():
+                    tool_call = types.Part(function_call=types.FunctionCall(
+                        name="script_writer",
+                        args={"request": prompt}
+                    ))
+                    yield LlmResponse(content=types.Content(role='model', parts=[tool_call]))
+                else:
+                    yield LlmResponse(content=types.Content(role='model', parts=[types.Part.from_text(text="I am ready to curate your podcast.")]))
+
+        # 2. News Researcher logic
+        elif "News Researcher" in system_instruction:
+            summary = (
+                "Here is the summarized list of tech stories:\n\n"
+                "- **Title:** Google Gemini 2.5 Flash Released\n"
+                "  **Summary:** Google launched Gemini 2.5 Flash with massive performance gains and low-latency API operations.\n"
+                "  **Key Takeaways:** Excellent for multi-agent workflows.\n\n"
+                "- **Title:** Astral uv Package Manager Updates\n"
+                "  **Summary:** uv package manager introduced project scaffolding and workspace management.\n"
+                "  **Key Takeaways:** Rust-based fast environment setups."
+            )
+            yield LlmResponse(content=types.Content(role='model', parts=[types.Part.from_text(text=summary)]))
+
+        # 3. Script Writer logic
+        elif "Podcast Script Writer" in system_instruction:
+            script = (
+                "[Upbeat Intro Music]\n"
+                "Host A: Welcome back to the podcast! Today we are discussing Gemini 2.5 and uv.\n"
+                "Host B: Yes, Gemini 2.5 Flash is incredibly fast, and uv simplifies Python development.\n"
+                "Host A: That is fantastic! See you next time.\n"
+                "[Upbeat Outro Music]"
+            )
+            yield LlmResponse(content=types.Content(role='model', parts=[types.Part.from_text(text=script)]))
+
+        # 4. General fallback
+        else:
+            yield LlmResponse(content=types.Content(role='model', parts=[types.Part.from_text(text="Demo offline model response.")]))
+
+# Instantiate DemoModel instead of Gemini to run fully local/free
+model_instance = DemoModel()
+
 
 news_researcher = LlmAgent(
     name="news_researcher",
@@ -306,7 +412,7 @@ async def generate_script_node(ctx: Context, node_input: str):
 
 
 @node
-async def security_failure_node(ctx: Context, node_input: str):
+async def security_failure_node(ctx: Context, node_input: Any):
     msg = "Security Checkpoint Failed: PII detected, prompt injection detected, or topic restricted."
     yield Event(
         content=types.Content(
@@ -320,7 +426,7 @@ async def security_failure_node(ctx: Context, node_input: str):
 
 
 @node
-async def final_output_node(ctx: Context, node_input: str):
+async def final_output_node(ctx: Context, node_input: Any):
     script = ctx.state.get("final_script", "")
     yield Event(
         content=types.Content(

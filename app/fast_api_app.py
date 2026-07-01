@@ -39,9 +39,43 @@ load_dotenv()
 setup_telemetry()
 # Must run before get_fast_api_app to set the tracer provider resource.
 setup_agent_engine_telemetry()
-_, project_id = google.auth.default()
-logging_client = google_cloud_logging.Client()
-logger = logging_client.logger(__name__)
+import json
+import logging
+
+try:
+    _, project_id = google.auth.default()
+    logging_client = google_cloud_logging.Client()
+    logger = logging_client.logger(__name__)
+except Exception as e:
+    from google.auth.credentials import AnonymousCredentials
+    def dummy_default(*args, **kwargs):
+        return AnonymousCredentials(), "dummy-project"
+    google.auth.default = dummy_default
+
+    class LocalLogger:
+        def __init__(self):
+            self._logger = logging.getLogger(__name__)
+            # Ensure basic logging configuration so outputs are visible
+            logging.basicConfig(level=logging.INFO)
+        def log_struct(self, info: dict, severity: str = "INFO"):
+            level = getattr(logging, severity, logging.INFO)
+            self._logger.log(level, json.dumps(info))
+        def info(self, msg, *args, **kwargs):
+            self._logger.info(msg, *args, **kwargs)
+        def warning(self, msg, *args, **kwargs):
+            self._logger.warning(msg, *args, **kwargs)
+        def error(self, msg, *args, **kwargs):
+            self._logger.error(msg, *args, **kwargs)
+    logger = LocalLogger()
+    project_id = "dummy-project"
+
+if not project_id:
+    project_id = "dummy-project"
+    os.environ.setdefault("GOOGLE_CLOUD_PROJECT", "dummy-project")
+
+import vertexai
+vertexai.init(project=project_id)
+
 allow_origins = (
     os.getenv("ALLOW_ORIGINS", "").split(",") if os.getenv("ALLOW_ORIGINS") else None
 )

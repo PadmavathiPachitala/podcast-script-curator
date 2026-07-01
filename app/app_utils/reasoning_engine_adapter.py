@@ -40,6 +40,12 @@ def attach_reasoning_engine_routes(app: FastAPI) -> None:
     def get_runtime() -> AdkApp:
         nonlocal runtime, streaming_methods, sync_methods
         if runtime is None:
+            import os
+            import vertexai
+            # Ensure vertexai is initialized in the request's context/thread
+            project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "dummy-project")
+            vertexai.init(project=project_id)
+
             from app.agent import app as adk_app
 
             # Reuse the process-wide services so sessions created here are
